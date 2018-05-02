@@ -91,14 +91,17 @@ live-serve: $(NODE_BIN_DIR)/onchange stop-serve serve
 
 upload:
 	S3_BUCKET=$$(aws s3api list-buckets --query "Buckets[?contains(Name, '$(HOSTNAME)')] | [0].Name" | jq -r '.'); \
-	echo "[bucket] is \"$${S3_BUCKET}\""; \
+	echo "[upload: bucket] is \"$${S3_BUCKET}\""; \
 	find _site -type f ! -iname 'index.html' -iname '*.html' -print0 | while read -d $$'\0' f; do \
-	  echo "[move] $$f to $${f%.html}"; \
+	  echo "[upload: move] $$f to $${f%.html}"; \
 		mv "$$f" "$${f%.html}"; \
 	done && \
+	echo "[upload: all files] is \"$${S3_BUCKET}\"" && \
 	aws s3 sync _site/ s3://$${S3_BUCKET} --size-only --exclude "*" --include "*.*" --delete --region $(REGION) && \
-	aws s3 sync _site/ s3://$${S3_BUCKET} --size-only --content-type "text/html; charset=utf-8" --exclude "*.*" --delete --region $(REGION)
+	echo "[upload: html] is \"$${S3_BUCKET}\"" && \
+	aws s3 sync _site/ s3://$${S3_BUCKET} --content-type "text/html; charset=utf-8" --exclude "*.*" --delete --region $(REGION)
 
 clear-cf:
 	CF_DISTRIBUTION=$$(aws cloudfront list-distributions --query "DistributionList.Items[].{DomainName: DomainName, OriginDomainName: Origins.Items[0].DomainName, DistributionID: Id}[?contains(OriginDomainName, '$(HOSTNAME)')] | [0].DistributionID" | jq -r '.'); \
+	echo "[clear-cf: CloudFront invalidation] Distribution: \"$${CF_DISTRIBUTION}\"" && \
 	aws cloudfront create-invalidation --distribution-id $${CF_DISTRIBUTION} --paths /\*
