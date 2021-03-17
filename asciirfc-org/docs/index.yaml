@@ -13,16 +13,9 @@ contents:
             content:
               - type: text
                 text: What is asciirfc?
-          - type: paragraph
+          - type: section
+            attrs:
+              id: features
             content:
-              - type: text
-                text: ' '
-      - type: section
-        attrs:
-          id: features
-        content:
-          - type: section_header
-            content:
-              - type: text
-                text: Features
-          - type: paragraph
+              - type: section_header
+              - type: paragraph
